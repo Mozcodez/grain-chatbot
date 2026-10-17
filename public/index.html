@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tanzania Grain Prices Chatbot</title>
+<style>
+  body{font-family:system-ui,sans-serif;margin:0;background:#f4f5f2;display:flex;justify-content:center}
+  main{width:100%;max-width:720px;height:100vh;display:flex;flex-direction:column;padding:12px;box-sizing:border-box}
+  h1{font-size:18px;margin:4px 0 2px}
+  small{color:#666}
+  #log{flex:1;overflow-y:auto;padding:12px 0;display:flex;flex-direction:column;gap:8px}
+  .m{max-width:85%;padding:9px 12px;border-radius:12px;white-space:pre-wrap;line-height:1.4}
+  .user{align-self:flex-end;background:#2e7d32;color:#fff}
+  .assistant{align-self:flex-start;background:#fff;border:1px solid #ddd}
+  form{display:flex;gap:8px}
+  input{flex:1;padding:10px;border:1px solid #bbb;border-radius:8px;font-size:15px}
+  button{padding:10px 16px;border:0;border-radius:8px;background:#2e7d32;color:#fff;font-size:15px;cursor:pointer}
+  button:disabled{opacity:.5}
+</style>
+</head>
+<body>
+<main>
+  <h1>Tanzania Grain Prices</h1>
+  <small>Wholesale prices, 25 Sept 2026 (TZS per 100 kg). Ask in English or Swahili.</small>
+  <div id="log"></div>
+  <form id="f"><input id="q" placeholder="e.g. Maize price in Dar es Salaam vs Mbeya?" autocomplete="off"><button id="b">Send</button></form>
+</main>
+<script>
+const log = document.getElementById("log"), f = document.getElementById("f"),
+      q = document.getElementById("q"), b = document.getElementById("b");
+const history = [];
+function add(role, text){
+  const d = document.createElement("div");
+  d.className = "m " + role; d.textContent = text;
+  log.appendChild(d); log.scrollTop = log.scrollHeight; return d;
+}
+add("assistant","Habari! Ask me about grain prices, e.g. “Cheapest market for maize?” or “Bei ya mchele Arusha?”");
+f.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = q.value.trim(); if(!text) return;
+  q.value = ""; b.disabled = true;
+  add("user", text); history.push({role:"user", text});
+  const pending = add("assistant", "…");
+  try{
+    const r = await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history})});
+    const {reply} = await r.json();
+    pending.textContent = reply; history.push({role:"assistant", text:reply});
+  }catch(err){ pending.textContent = "Network error."; }
+  b.disabled = false; q.focus();
+});
+</script>
+</body>
+</html>

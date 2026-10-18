@@ -55,10 +55,10 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ reply: "Method not allowed" });
   try {
     const messages = req.body?.messages || [];
-    const contents = messages.map((m) => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.text }],
-    }));
+    const contents = messages.slice(-10).map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: String(m.text).slice(0, 500) }],
+  }));
     const reply = await generate(contents);
     res.status(200).json({ reply });
   } catch (err) {

@@ -1,5 +1,5 @@
 {
-  "outputDirectory": "public",
+  "framework": null,
   "functions": {
     "api/chat.js": {
       "includeFiles": "data/**",
